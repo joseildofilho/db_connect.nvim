@@ -2,9 +2,11 @@ local fidget = require 'fidget'
 local Job = require 'plenary.job'
 local M = {}
 
+local BUF_NAME = "db_connect://results"
+
 function M.connect(urlObj)
     urlObj = urlObj or {}
-    urlObj.url = urlObj.url or "postgresql://postgres:postgres@localhost:5460/swp-cash-out-service"
+    urlObj.url = urlObj.url or "postgresql://postgres:postgres@localhost:5432/postgres"
     urlObj.name = urlObj.name or "default"
     -- postgresql://[user[:password]@][host][:port][,...][/dbname][?param1=value1&...]
     M._connection = Job:new({
@@ -12,25 +14,17 @@ function M.connect(urlObj)
         args = { urlObj.url },
         on_stdout = function(_, data)
             vim.schedule(function()
-                local results_buf = nil
-                for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-                    local buf_name = vim.api.nvim_buf_get_name(buf)
-                    print(buf_name)
-                    if buf_name == 'db_connect://results' then
-                        results_buf = buf
-                        break
-                    end
-                end
-                if results_buf == nil then
-                    local current_buf = vim.api.nvim_get_current_buf()
+                if M.results_buf == nil then
+                    vim.cmd("vsp " .. BUF_NAME)
 
-                    vim.cmd [[vsp db_connect://results]]
-                    results_buf = vim.api.nvim_get_current_buf()
-
-                    vim.api.nvim_set_current_buf(current_buf)
+                    M.results_buf = vim.api.nvim_get_current_buf()
+                    vim.bo[M.results_buf].swapfile = false
+                    vim.bo[M.results_buf].buftype = 'nofile'
                 end
 
-                vim.api.nvim_buf_set_lines(results_buf, 0, -1, false, data)
+                vim.bo[M.results_buf].modifiable = true
+                vim.api.nvim_buf_set_lines(M.results_buf, -1, -1, false, { data })
+                vim.bo[M.results_buf].modifiable = false
             end)
         end,
         on_stderr = function(_, data)
@@ -51,15 +45,17 @@ function M.submitQuery(query)
     M._connection:send(query .. '\n')
 end
 
-vim.api.nvim_create_user_command("DbConnectSubmitQuery", function(opts) M.submitQuery(opts) end, {})
+vim.api.nvim_create_user_command("DbConnectSubmitQuery", M.submitQuery, {})
 
 function M.setup(opts)
     if opts.connections then
-        if table.getn(opts.connections) ~= 1 then
+        if table.getn(opts.connections) > 1 then
             print("Only one connection is supported")
             return
         end
         M.connect(opts.connections[1]())
+    else
+        M.connect({})
     end
 end
 
