@@ -38,8 +38,6 @@ function M.submit_query(query)
     M._connection:send(query .. '\n')
 end
 
-vim.api.nvim_create_user_command("DbConnectSubmitQuery", M.submitQuery, {})
-
 function M.setup(opts)
     if opts.connections then
         if table.getn(opts.connections) > 1 then
