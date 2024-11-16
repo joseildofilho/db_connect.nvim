@@ -34,7 +34,7 @@ function M.connect(urlObj)
     return M
 end
 
-function M.submitQuery(query)
+function M.submit_query(query)
     M._connection:send(query .. '\n')
 end
 
