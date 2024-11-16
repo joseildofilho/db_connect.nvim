@@ -4,7 +4,6 @@ local ResultsDisplay = require 'db_connect.results'
 
 local M = {}
 
-
 function M.connect(urlObj)
     urlObj = urlObj or {}
     urlObj.url = urlObj.url or "postgresql://postgres:postgres@localhost:5432/postgres"
