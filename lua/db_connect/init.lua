@@ -39,7 +39,7 @@ end
 
 function M.setup(opts)
     if opts.connections then
-        if table.getn(opts.connections) > 1 then
+        if #opts.connections > 1 then
             print("Only one connection is supported")
             return
         end
