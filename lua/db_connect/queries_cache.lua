@@ -1,16 +1,25 @@
 local M = {}
 
-M.query_queue = { head = 1, tail = 2 }
+local cache = {}
 
-function M.add_query(query)
-    local first = M.query_queue.head
+cache.query_queue = { head = 1, tail = 2 }
 
-    M.query_queue.head = M.query_queue.head + 1
-
-    M.query_queue[first] = query;
+function M:new(o)
+    o = o or {}
+    setmetatable(o, self)
+    self.__index = self
+    return cache
 end
 
-function M.get_cached_queries()
+function cache:add_query(query)
+    local first = M.query_queue.head
+
+    cache.query_queue.head = M.query_queue.head + 1
+
+    cache.query_queue[first] = query;
+end
+
+function cache:get_cached_queries()
     return M.query_queue
 end
 
