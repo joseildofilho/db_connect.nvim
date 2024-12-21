@@ -3,11 +3,11 @@ local M = {}
 local cache = {}
 
 function M:new(ex_config)
-    local config = ex_config or {}
-
     local o = {}
     setmetatable(o, cache)
     o.__index = cache
+
+    local config = ex_config or {}
 
     cache.query_queue = { head = 0, tail = 0 }
     cache.cache_limit = config.cache_limit or 10
@@ -25,6 +25,7 @@ function cache:add_query(query)
     if tail - head > limit then
         local new_head = head + 1
         self.query_queue[new_head] = nil
+        table.remove(self.query_queue, nil)
         self.query_queue.head = new_head
     end
 end
