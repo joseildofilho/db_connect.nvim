@@ -20,4 +20,15 @@ describe('tests the cache for queries', function()
         assert.equals(cache:get_cached_queries()[2], second_query)
         assert.equals(cache:get_cached_queries()[1], nil)
     end)
+
+    it('should start the cache with limit of 10 queries', function()
+        local cache = require 'db_connect.queries_cache':new()
+
+        for i = 1, 15 do
+            cache:add_query('select * from anything;'.. i)
+        end
+
+        P(cache:get_cached_queries())
+        assert.equals(10, #cache:get_cached_queries())
+    end)
 end)
